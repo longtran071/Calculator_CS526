@@ -12,6 +12,7 @@ export default class App extends React.Component {
       numerator:"",
       denominator:"",
       operator:"",
+      his: Array(100),
       switchFractionSection:false
       }
   }
@@ -24,15 +25,23 @@ export default class App extends React.Component {
     if(operator == "+" ){
       this.setState((state, props) => ({ display: parseInt(x) + parseInt(y) }))
       this.setState((state, props) => ({ switchFractionSection: false }))
+      this.state.his.unshift(x + '+' + y);
+      this.setState((state, props) => ({ his: state.his }))
     }else if(operator == "-"){
       this.setState((state, props) => ({ display: parseInt(x) - parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))        
+      this.setState((state, props) => ({ switchFractionSection: false }))
+      this.state.his.unshift(x + '-' + y);
+      this.setState((state, props) => ({ his: state.his }))        
     }else if(operator == "x"){
       this.setState((state, props) => ({ display: parseInt(x) * parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))         
+      this.setState((state, props) => ({ switchFractionSection: false }))
+      this.state.his.unshift(x + '*' + y);
+      this.setState((state, props) => ({ his: state.his }))         
     }else {
       this.setState((state, props) => ({ display: parseInt(x) / parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))         
+      this.setState((state, props) => ({ switchFractionSection: false }))   
+      this.state.his.unshift(x + '/' + y);
+      this.setState((state, props) => ({ his: state.his }))      
     }
       
     //Clear state for next operation
@@ -70,6 +79,9 @@ export default class App extends React.Component {
         <View style={styles.display}>
             <Text style={styles.title}>{this.state.display}</Text>
         </View>
+        <View style={styles.display}>
+            <Text style={styles.title}>{this.state.his[0]}</Text>
+        </View>
         <View style={styles.calcKeyRow}>
             <CalcKeys displayKey="1" onClick={()=> this.addNumber("1")} />
             <CalcKeys displayKey="2" onClick={()=> this.addNumber("2")} />
@@ -87,8 +99,8 @@ export default class App extends React.Component {
         </View>
         <View style={styles.calcKeyRow}>
             <CalcKeys displayKey="0" onClick={()=> this.addNumber("0")} />
-            <CalcKeys onClick={()=> this.clear()} displayKey="Clear" />
-            <CalcKeys displayKey="Go" onClick={()=> this.evalutate(this.state.numerator, this.state.denominator, this.state.operator)} />
+            <CalcKeys onClick={()=> this.clear()} displayKey="AC" />
+            <CalcKeys displayKey="=" onClick={()=> this.evalutate(this.state.numerator, this.state.denominator, this.state.operator)} />
         </View>
         <View style={styles.calcKeyRow}>
             <OperatorKeys displayKey="+" onClick={()=> this.operatorSymbol("+")} />
