@@ -12,36 +12,37 @@ export default class App extends React.Component {
       numerator:"",
       denominator:"",
       operator:"",
-      his: Array(100),
+      his: [],
+      his_view: "",
       switchFractionSection:false
       }
   }
 
   clear(){
-    this.setState((state, props) => ({ display:""}));  
+    this.setState((state, props) => ({ display:"", his_view: state.his[0]}));  
   }
 
   evalutate(x,y,operator){
     if(operator == "+" ){
       this.setState((state, props) => ({ display: parseInt(x) + parseInt(y) }))
       this.setState((state, props) => ({ switchFractionSection: false }))
-      this.state.his.unshift(x + '+' + y);
+      this.state.his.unshift(x + ' + ' + y);
       this.setState((state, props) => ({ his: state.his }))
     }else if(operator == "-"){
       this.setState((state, props) => ({ display: parseInt(x) - parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))
-      this.state.his.unshift(x + '-' + y);
-      this.setState((state, props) => ({ his: state.his }))        
+      this.setState((state, props) => ({ switchFractionSection: false }))   
+      this.state.his.unshift(x + ' - ' + y)
+      this.setState((state, props) => ({ his: state.his }))     
     }else if(operator == "x"){
       this.setState((state, props) => ({ display: parseInt(x) * parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))
-      this.state.his.unshift(x + '*' + y);
-      this.setState((state, props) => ({ his: state.his }))         
+      this.setState((state, props) => ({ switchFractionSection: false }))  
+      this.state.his.unshift(x + ' * ' + y)
+      this.setState((state, props) => ({ his: state.his }))       
     }else {
       this.setState((state, props) => ({ display: parseInt(x) / parseInt(y) }))
-      this.setState((state, props) => ({ switchFractionSection: false }))   
-      this.state.his.unshift(x + '/' + y);
-      this.setState((state, props) => ({ his: state.his }))      
+      this.setState((state, props) => ({ switchFractionSection: false }))    
+      this.state.his.unshift(x + ' / ' + y)
+      this.setState((state, props) => ({ his: state.his }))     
     }
       
     //Clear state for next operation
@@ -57,6 +58,8 @@ export default class App extends React.Component {
     }else{
       this.setState((state, props) => ({numerator:state.numerator + x}))
     }
+    
+    this.setState((state, props) => ({his_view: this.history_search(this.state.his, this.state.display)}))
   }
 
   operatorSymbol(x){
@@ -69,6 +72,16 @@ export default class App extends React.Component {
     this.setState((state, props)=>({display:state.display + x}))
     this.setState((state, props) => ({ operator: x }))
     this.setState((state, props) => ({switchFractionSection:true }))
+    this.setState((state, props) => ({his_view: this.history_search(this.state.his, this.state.display)}))
+  }
+
+  history_search(his, display){
+    for(let i = 0; i < his.length; i++){
+      if(his[i].includes(display)){
+        return his[i];
+      }
+    }
+    return "";
   }    
   render() {
     return (
@@ -80,7 +93,7 @@ export default class App extends React.Component {
             <Text style={styles.title}>{this.state.display}</Text>
         </View>
         <View style={styles.display}>
-            <Text style={styles.title}>{this.state.his[0]}</Text>
+            <Text style={styles.title}>{this.state.his_view}</Text>
         </View>
         <View style={styles.calcKeyRow}>
             <CalcKeys displayKey="1" onClick={()=> this.addNumber("1")} />
