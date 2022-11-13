@@ -1,5 +1,7 @@
 import React, {Component} from 'react'
-import {StyleSheet, Text, View, Button, TouchableOpacity} from 'react-native'
+import {StyleSheet, Text, View, Button, TouchableOpacity, Dimensions} from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 export default class CalculatorHome extends Component{
 
@@ -8,10 +10,41 @@ export default class CalculatorHome extends Component{
     this.state = {
       resultText: "",
       caclculationText: "",
-      history: []
+      history: Array(),
+      orientation: 0,
+      bool: 0
     }
 
     this.operations = ['DEL','+', '-', '*', '/']
+  }
+
+  storeData = async (value) => {
+    try {
+          let jsonValue = JSON.stringify(value)
+          AsyncStorage.setItem('b', jsonValue)
+        } catch (e) {
+            console.log('ERROR while storing data')
+        }
+  }
+
+  getData = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('b')
+            // alert(jsonValue)
+            return jsonValue != null ? JSON.parse(jsonValue) : null;
+        } catch (e) {
+          //
+        }
+  }
+
+  getOrientation = () => {
+    if (Dimensions.get('window').width < Dimensions.get('window').height) {
+      this.setState({ orientation: 0 });
+    } else { this.setState({ orientation: 1 }); }
+  };
+ 
+  componentDidMount() {
+    Dimensions.addEventListener('change', this.getOrientation);
   }
 
   calculateResult(){
@@ -23,6 +56,8 @@ export default class CalculatorHome extends Component{
     this.setState({
       history: this.state.history
     })
+    
+    this.storeData(this.state.history)
   }
 
   validate(){
@@ -74,8 +109,27 @@ export default class CalculatorHome extends Component{
     }
   }
 
+  set_history = (result) => {
+    for (let i = 0; i < result.length; i++){
+      this.state.history.push([result[i][0], result[i][1]])
+    }
+    this.state.history.push(temp)
+    this.setState({
+      history: this.state.history,
+      bool: 1
+    })
+  }
+
+
   render() {
     const {navigation} = this.props
+    if(this.state.history.length === 0 && this.state.bool == 0) {
+      const res = this.getData()
+      res.then((result) => {
+        this.set_history(result)
+      })
+    }
+    
     let rows = []
     let nums = [[1,2,3], [4,5,6], [7,8,9], ['.',0,'=']]
     for(let i = 0; i < 4; i++){
@@ -100,12 +154,14 @@ export default class CalculatorHome extends Component{
     }
 
     return(
-      <View style={styles.container}>
-        <View style={styles.result}>
-          <View style={styles.resultText}><Text>{this.state.resultText}</Text></View>
-        </View>
-        <View style={styles.caclculation}>
-          <View style={styles.caclculationText}><Text>{this.state.caclculationText}</Text></View>
+      <View style={[styles.container, {flexDirection: this.state.orientation > 0 ? 'row' : 'column'}]}>
+        <View style={{flex: this.state.orientation > 0 ? 7 : 3}}>
+          <View style={styles.result}>
+            <View><Text style={styles.resultText}>{this.state.resultText}</Text></View>
+          </View>
+          <View style={styles.caclculation}>
+            <View><Text style={styles.caclculationText}>{this.state.caclculationText}</Text></View>
+          </View>
         </View>
         <View style={styles.buttons}>
           <View style={styles.numbers}>
@@ -114,16 +170,17 @@ export default class CalculatorHome extends Component{
           <View style={styles.operations}>
             {ops}
           </View>
-          <View style={styles.navi}><TouchableOpacity onPress={()=>{navigation.navigate('History', {history: this.state.history,})}} style={styles.navigation}><Text>{"<<"}</Text></TouchableOpacity></View>
+          <View style={styles.navi}><TouchableOpacity onPress={()=>{navigation.navigate('History', {history: this.state.history, orientation: this.state.orientation})}} style={styles.navigation}><Text>{"<<"}</Text></TouchableOpacity></View>
         </View>
       </View> 
     );
   }
 }
 
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
 
   resultText: {
