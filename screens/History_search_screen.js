@@ -1,5 +1,5 @@
 import react, {Component} from 'react'
-import {StyleSheet, Text, View, ScrollView, TouchableOpacity} from 'react-native'
+import {StyleSheet, Text, View, ScrollView, TouchableOpacity, Dimensions} from 'react-native'
 
 export default class History_search extends Component{
   constructor() {
@@ -8,17 +8,28 @@ export default class History_search extends Component{
       resultText: "",
       caclculationText: "",
       history: Array(),
-      bool: true
+      bool: true,
+      orientation: 0
     }
 
     this.operations = ['DEL','+', '-', '*', '/']
   }
 
-   history_search(his, text){
+  getOrientation = () => {
+    if (Dimensions.get('window').width < Dimensions.get('window').height) {
+      this.setState({ orientation: 0 });
+    } else { this.setState({ orientation: 1 }); }
+  };
+ 
+  componentDidMount() {
+    Dimensions.addEventListener('change', this.getOrientation);
+  }
+
+  history_search(his, text){
      a = []
     for(let i = 0; i < his.length; i++){
       if(his[i][0].includes(text)){
-        a.push(<Text>{his[i][0] + ' = ' + his[i][1]}</Text>);
+        a.push(<Text style={styles.caclculationText}>{his[i][0] + ' = ' + his[i][1]}</Text>);
       }
     }
     return a;
@@ -89,16 +100,17 @@ export default class History_search extends Component{
 
   render() {
     const {route, navigation} = this.props
-    const {history} = route.params
+    const {history, orientation_home} = route.params
     let result_history = []
     for(let i = 0; i < history.length; i++){
-      result_history.push(<View><Text>{history[i][0] + '=' + history[i][1]}</Text></View>)
+      result_history.push(<View><Text style={styles.caclculationText}>{history[i][0] + '=' + history[i][1]}</Text></View>)
     }
 
     if(this.state.bool){
       this.state.history.push(result_history)
       this.setState({
         history: this.state.history,
+        orientation: orientation_home,
         bool: false
       })
     }
@@ -129,14 +141,17 @@ export default class History_search extends Component{
     }
 
     return(
-      <View style={styles.container}>
-        <View style={styles.result}>
-          <ScrollView>
-            {this.state.history}
-          </ScrollView>
-        </View>
-        <View style={styles.caclculation}>
-          <View style={styles.resultText}><Text>{this.state.resultText}</Text></View>
+      <View style={[styles.container, {flexDirection: this.state.orientation > 0 ? 'row' : 'column'}]}>
+
+        <View style={{flex: this.state.orientation > 0 ? 7 : 3}}>
+          <View style={styles.result}>
+            <ScrollView>
+              {this.state.history}
+            </ScrollView>
+          </View>
+          <View style={styles.caclculation}>
+            <View><Text style={styles.resultText}>{this.state.resultText}</Text></View>
+          </View>
         </View>
         <View style={styles.buttons}>
           <View style={styles.numbers}>
@@ -157,6 +172,11 @@ const styles = StyleSheet.create({
   },
 
   resultText: {
+    fontSize: 24,
+    color: 'black'
+  },
+
+  caclculationText: {
     fontSize: 24,
     color: 'black'
   },
